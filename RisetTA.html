@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafya Riset: Perancangan SPK Ekstrakurikuler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals) -->
+    <!-- Application Structure Plan: Aplikasi ini dirancang sebagai SPA (Single Page Application) dengan navigasi berbasis scroll-spy yang memandu pengguna melalui beberapa bagian tematik. Struktur ini dipilih untuk mengubah laporan yang padat teks menjadi sebuah perjalanan eksplorasi yang terstruktur namun fleksibel. Alih-alih membaca secara linear, pengguna dapat melompat ke bagian yang diminati. Alur pengguna dimulai dari gambaran umum (Beranda), mendalami inti teknis (Metode TOPSIS), memahami kerangka sistem (Arsitektur), melihat fungsionalitas produk jadi (Fitur), menyelami aspek teknis implementasi (Data & Perkakas), dan diakhiri dengan rencana eksekusi (Rencana Proyek). Struktur ini memprioritaskan pemahaman dan interaksi. -->
+    <!-- Visualization & Content Choices: 
+        - Laporan Info: Langkah-langkah Algoritma TOPSIS -> Goal: Memahami & bereksperimen -> Viz/Method: Kalkulator interaktif dengan slider dan input, disertai bar chart hasil (Chart.js) dan tabel terperinci. -> Interaction: Pengguna mengubah bobot kriteria dan nilai alternatif, sistem secara real-time menghitung ulang dan memperbarui visualisasi. -> Justification: Mengubah konsep matematis yang abstrak menjadi alat interaktif yang nyata.
+        - Laporan Info: Rancangan Database & Strategi Pengumpulan Data -> Goal: Menginformasikan & mengorganisir -> Viz/Method: Diagram skema tabel dan kartu perbandingan alur kerja (Google Form vs Web App) dibangun dengan HTML/Tailwind. -> Interaction: Tampilan statis yang terstruktur rapi untuk menjelaskan konsep teknis yang kompleks. -> Justification: Memecah konsep basis data dan alur kerja menjadi bagian-bagian visual yang mudah dipahami.
+        - Laporan Info: Peran Postman -> Goal: Menjelaskan proses -> Viz/Method: Kartu langkah-demi-langkah dengan ilustrasi ikon. -> Interaction: Tampilan statis. -> Justification: Menyederhanakan alur kerja pengujian API yang abstrak menjadi langkah-langkah konkret.
+        - Laporan Info: Alur Kerja Pengguna -> Goal: Mengorganisir & menjelaskan -> Viz/Method: Sistem tab interaktif. -> Interaction: Pengguna mengklik tab untuk beralih antara alur kerja setiap peran. -> Justification: Menghemat ruang vertikal dan menyajikan informasi secara terfokus.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #0ea5e9; /* sky-500 */
+            border-bottom-color: #0ea5e9; /* sky-500 */
+        }
+        .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+         @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <header id="header" class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-sky-600">Mafya Project TA</h1>
+                </div>
+                <div class="hidden lg:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#home" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Beranda</a>
+                        <a href="#topsis" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Metode TOPSIS</a>
+                        <a href="#architecture" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Arsitektur</a>
+                        <a href="#features" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Fitur</a>
+                        <a href="#data-toolkit" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Data & Perkakas</a>
+                        <a href="#plan" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Rencana Proyek</a>
+                    </div>
+                </div>
+                 <div class="lg:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-sky-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500">
+                        <span class="sr-only">Buka menu</span>
+                        <div id="hamburger-icon" class="block h-6 w-6">
+                            <span class="block h-0.5 w-6 bg-current transform transition duration-500 ease-in-out"></span>
+                            <span class="block h-0.5 w-6 bg-current mt-1.5 transform transition duration-500 ease-in-out"></span>
+                            <span class="block h-0.5 w-6 bg-current mt-1.5 transform transition duration-500 ease-in-out"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="lg:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Beranda</a>
+                <a href="#topsis" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Metode TOPSIS</a>
+                <a href="#architecture" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Arsitektur</a>
+                <a href="#features" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Fitur</a>
+                <a href="#data-toolkit" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Data & Perkakas</a>
+                <a href="#plan" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-slate-700">Rencana Proyek</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Section 1: Home -->
+        <section id="home" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Sistem Pendukung Keputusan</h2>
+                <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
+                    Merancang SPK Pemilihan Ekstrakurikuler dengan Metode TOPSIS
+                </p>
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                    Sebuah panduan komprehensif untuk merancang dan membangun sistem rekomendasi yang cerdas, andal, dan modern bagi siswa SMP, dari konsep hingga implementasi.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: TOPSIS -->
+        <section id="topsis" class="py-16 sm:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Inti Mesin Rekomendasi</h2>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Eksplorasi Interaktif Metode TOPSIS</p>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                        Pahami bagaimana sistem membuat keputusan dengan mencoba langsung kalkulator TOPSIS. Ubah bobot dan nilai untuk melihat bagaimana peringkat ekstrakurikuler berubah secara real-time.
+                    </p>
+                </div>
+
+                <div class="mt-12 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-start">
+                    <div class="p-6 section-card">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">Kalkulator Rekomendasi</h3>
+                        <p class="text-slate-600 mb-6">Simulasikan preferensi siswa "Andi" untuk 3 ekskul. Sesuaikan bobot kriteria dan nilai preferensi Andi untuk melihat dampaknya pada hasil akhir.</p>
+                        <div id="criteria-weights"></div>
+                        <div id="alternatives-inputs" class="mt-6 space-y-4"></div>
+                        <div class="mt-8">
+                            <h4 class="text-lg font-semibold text-slate-700">Distribusi Bobot Kriteria</h4>
+                            <div class="chart-container h-48 sm:h-56 mt-2">
+                                <canvas id="weightsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 lg:mt-0 p-6 section-card">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">Hasil Peringkat</h3>
+                        <p class="text-slate-600 mb-6">Berdasarkan input Anda, berikut adalah skor preferensi ($C_i$) dan peringkat akhir yang dihasilkan oleh algoritma TOPSIS.</p>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="resultsChart"></canvas>
+                        </div>
+                        <div class="mt-8 overflow-x-auto">
+                            <h4 class="text-lg font-semibold text-slate-700 mb-2">Tabel Rincian Hasil</h4>
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Peringkat</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Alternatif</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Skor ($C_i$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="results-table" class="bg-white divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Architecture -->
+        <section id="architecture" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Cetak Biru Sistem</h2>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Arsitektur Aplikasi</p>
+                     <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                        Sistem dirancang dengan arsitektur modern yang memisahkan frontend dan backend, memastikan fleksibilitas untuk pengembangan multi-platform dan skalabilitas di masa depan.
+                    </p>
+                </div>
+
+                <div class="mt-12 section-card p-6 sm:p-8">
+                     <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">Diagram Arsitektur Tingkat Tinggi</h3>
+                     <div class="flex flex-col items-center space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div class="p-4 bg-sky-100 rounded-lg border-2 border-sky-200"><h4 class="font-semibold">Klien Web (React)</h4></div>
+                            <div class="p-4 bg-sky-100 rounded-lg border-2 border-sky-200"><h4 class="font-semibold">Klien Desktop (Electron)</h4></div>
+                            <div class="p-4 bg-sky-100 rounded-lg border-2 border-sky-200"><h4 class="font-semibold">Klien Mobile (React Native)</h4></div>
+                        </div>
+                        <div class="text-2xl text-slate-400">↓ <span class="text-base font-mono text-slate-500 align-middle">API Calls (JSON)</span> ↓</div>
+                        <div class="w-full max-w-4xl p-4 bg-slate-100 rounded-lg border-2 border-slate-200">
+                             <h4 class="font-semibold text-center text-lg">Backend Service (Python/Django)</h4>
+                             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="p-3 bg-white rounded text-center shadow-sm">Autentikasi (JWT)</div>
+                                <div class="p-3 bg-white rounded text-center shadow-sm">Manajemen Data</div>
+                                <div class="p-3 bg-white rounded text-center shadow-sm">Mesin Rekomendasi</div>
+                             </div>
+                        </div>
+                         <div class="text-2xl text-slate-400">↓ <span class="text-base font-mono text-slate-500 align-middle">SQL Queries</span> ↓</div>
+                         <div class="p-4 bg-emerald-100 rounded-lg border-2 border-emerald-200 w-full max-w-sm text-center">
+                            <h4 class="font-semibold">Database (PostgreSQL)</h4>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+         <!-- Section 4: Features -->
+        <section id="features" class="py-16 sm:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                     <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Fungsionalitas Sistem</h2>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Fitur & Alur Kerja Pengguna</p>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                        Sistem dirancang dengan tiga peran pengguna yang jelas: Tamu, Siswa, dan Admin, masing-masing dengan serangkaian fitur yang disesuaikan untuk memenuhi kebutuhan mereka.
+                    </p>
+                </div>
+                
+                <div class="mt-12 max-w-4xl mx-auto">
+                    <div class="sm:hidden">
+                        <label for="tabs-select" class="sr-only">Pilih peran</label>
+                        <select id="tabs-select" class="block w-full rounded-md border-slate-300 focus:border-sky-500 focus:ring-sky-500"></select>
+                    </div>
+                    <div class="hidden sm:block">
+                        <div class="border-b border-slate-200">
+                            <nav id="tabs-desktop" class="-mb-px flex space-x-8" aria-label="Tabs"></nav>
+                        </div>
+                    </div>
+                    <div id="tab-content" class="mt-8"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Data & Toolkit -->
+        <section id="data-toolkit" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Implementasi Teknis</h2>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Data & Perkakas Proyek</p>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                        Dasar dari aplikasi yang andal adalah data yang terstruktur baik dan perkakas yang tepat. Bagian ini merinci rancangan database, strategi pengumpulan data, dan alat-alat utama yang digunakan.
+                    </p>
+                </div>
+                
+                <!-- Database Design -->
+                <div id="database-design" class="mt-16"></div>
+
+                <!-- Data Collection -->
+                <div id="data-collection" class="mt-16"></div>
+
+                <!-- API Testing -->
+                <div id="api-testing" class="mt-16"></div>
+                
+                <!-- Software & Tech Stack -->
+                <div id="software-stack" class="mt-16"></div>
+
+            </div>
+        </section>
+
+         <!-- Section 6: Project Plan -->
+        <section id="plan" class="py-16 sm:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-base font-semibold text-sky-600 tracking-wide uppercase">Eksekusi Akhir</h2>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Rencana Proyek Profesional</p>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-500">
+                        Dari struktur folder yang rapi hingga strategi evaluasi dan deployment yang andal, setiap aspek proyek direncanakan secara profesional untuk memastikan keberhasilan.
+                    </p>
+                </div>
+
+                <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="section-card p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Struktur Folder Monorepo</h3>
+                        <p class="text-slate-600 mb-4">Semua kode (backend, frontend) disimpan dalam satu repositori untuk manajemen yang lebih sederhana dan efisien.</p>
+                        <div class="bg-slate-800 text-white p-4 rounded-md font-mono text-sm overflow-x-auto">
+                            <pre><code>skripsi-spk-ekskul/
+├── 📂 backend/         # Kode Django
+├── 📂 frontend/        # Kode React
+├── 📂 docs/            # Dokumentasi Proyek
+├── 📄 docker-compose.yml # Konfigurasi Docker
+└── 📄 README.md</code></pre>
+                        </div>
+                    </div>
+                     <div class="section-card p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Rencana Evaluasi & Deployment</h3>
+                        <p class="text-slate-600 mb-4">Sistem akan dievaluasi secara kuantitatif dan teknis untuk memastikan kualitas dan keandalannya sebelum dikemas untuk distribusi.</p>
+                        <div class="space-y-4">
+                           <div>
+                               <h4 class="font-semibold text-slate-700">Evaluasi Kinerja</h4>
+                               <ul class="list-disc list-inside text-slate-600 mt-1">
+                                   <li>Akurasi Algoritma (Precision, Recall)</li>
+                                   <li>Uji Beban & Stres Aplikasi</li>
+                               </ul>
+                           </div>
+                            <div>
+                               <h4 class="font-semibold text-slate-700">Deployment via CD</h4>
+                               <p class="text-slate-600 mt-1">Seluruh aplikasi dikemas dengan <span class="font-semibold text-sky-600">Docker</span>, memungkinkan instalasi dan eksekusi yang mudah dengan satu perintah: <code class="bg-slate-200 text-slate-800 px-2 py-1 rounded">docker-compose up</code>.</p>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+             <p>Dasbor Interaktif untuk Perancangan SPK Pemilihan Ekstrakurikuler.</p>
+             <p class="text-sm text-slate-400 mt-2">Dibuat untuk memvisualisasikan laporan proyek skripsi secara dinamis.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const appData = {
+        criteria: [
+            { id: 'c1', name: 'Kesesuaian Minat', type: 'benefit', weight: 0.5, value: 5 },
+            { id: 'c2', name: 'Komitmen Waktu', type: 'cost', weight: 0.3, value: 2 },
+            { id: 'c3', name: 'Biaya Tambahan', type: 'cost', weight: 0.2, value: 3 },
+        ],
+        alternatives: [
+            { id: 'a1', name: 'Basket', values: { c1: 5, c2: 2, c3: 3 } },
+            { id: 'a2', name: 'Paskibra', values: { c1: 3, c2: 3, c3: 4 } },
+            { id: 'a3', name: 'Marawis', values: { c1: 2, c2: 5, c3: 5 } },
+        ],
+        softwareStack: [
+            { category: 'Backend', tech: 'Django & Python', just: 'Produktivitas tinggi, keamanan bawaan, dan ekosistem yang matang untuk pengembangan server-side.' },
+            { category: 'Frontend', tech: 'React & MUI', just: 'Antarmuka pengguna yang dinamis dan modern dengan komponen siap pakai dari Material-UI.' },
+            { category: 'Database', tech: 'PostgreSQL', just: 'Kuat, reliabel, dan open-source, sangat cocok untuk data relasional yang terstruktur.' },
+            { category: 'API Testing', tech: 'Postman', just: 'Alat esensial untuk menguji dan memvalidasi setiap endpoint API secara independen dari frontend.'},
+            { category: 'Deployment', tech: 'Docker & Docker Compose', just: 'Portabilitas dan konsistensi lingkungan, memenuhi syarat pengiriman proyek via CD dengan cara modern.' },
+        ],
+        userFeatures: [
+            { 
+                role: 'Tamu', 
+                description: 'Pengunjung umum situs yang dapat menjelajahi informasi tanpa perlu login.',
+                features: [ { name: 'Jelajahi Ekstrakurikuler', icon: '🔍' }, { name: 'Filter & Cari Ekskul', icon: '🔎' }, { name: 'Lihat Detail Ekskul', icon: 'ℹ️' }, { name: 'Coba Rekomendasi Contoh', icon: '🧪' }, ]
+            },
+            { 
+                role: 'Siswa', 
+                description: 'Pengguna terautentikasi yang menjadi target utama sistem rekomendasi.',
+                features: [ { name: 'Registrasi & Login', icon: '🔑' }, { name: 'Manajemen Profil Minat', icon: '👤' }, { name: 'Terima Rekomendasi Personal', icon: '✨' }, { name: 'Cetak Laporan Pribadi (PDF)', icon: '📄' }, ]
+            },
+            { 
+                role: 'Admin', 
+                description: 'Pengguna dengan hak akses tertinggi untuk mengelola data master sistem.',
+                features: [ { name: 'Dasbor Admin', icon: '📊' }, { name: 'Manajemen Data Siswa (CRUD)', icon: '🧑‍🎓' }, { name: 'Manajemen Data Ekskul (CRUD)', icon: '🏆' }, { name: 'Akses Laporan Agregat', icon: '📈' }, ]
+            }
+        ]
+    };
+
+    let charts = {};
+
+    function topsis(alternatives, criteria, weights) {
+        const m = alternatives.length;
+        const n = criteria.length;
+        const x = alternatives.map(alt => criteria.map(crit => alt.values[crit.id]));
+        const normalizedR = Array.from({ length: m }, () => Array(n).fill(0));
+        for (let j = 0; j < n; j++) {
+            let sumSq = 0;
+            for (let i = 0; i < m; i++) { sumSq += x[i][j] ** 2; }
+            const denominator = Math.sqrt(sumSq);
+            for (let i = 0; i < m; i++) { normalizedR[i][j] = denominator === 0 ? 0 : x[i][j] / denominator; }
+        }
+        const weightedV = Array.from({ length: m }, () => Array(n).fill(0));
+        for (let i = 0; i < m; i++) {
+            for (let j = 0; j < n; j++) { weightedV[i][j] = normalizedR[i][j] * weights[j]; }
+        }
+        const idealPositive = Array(n).fill(0);
+        const idealNegative = Array(n).fill(0);
+        for (let j = 0; j < n; j++) {
+            const column = weightedV.map(row => row[j]);
+            if (criteria[j].type === 'benefit') {
+                idealPositive[j] = Math.max(...column);
+                idealNegative[j] = Math.min(...column);
+            } else { 
+                idealPositive[j] = Math.min(...column);
+                idealNegative[j] = Math.max(...column);
+            }
+        }
+        const distPositive = Array(m).fill(0);
+        const distNegative = Array(m).fill(0);
+        for (let i = 0; i < m; i++) {
+            let sumSqPos = 0; let sumSqNeg = 0;
+            for (let j = 0; j < n; j++) {
+                sumSqPos += (weightedV[i][j] - idealPositive[j]) ** 2;
+                sumSqNeg += (weightedV[i][j] - idealNegative[j]) ** 2;
+            }
+            distPositive[i] = Math.sqrt(sumSqPos);
+            distNegative[i] = Math.sqrt(sumSqNeg);
+        }
+        const closeness = Array(m).fill(0);
+        for (let i = 0; i < m; i++) {
+            const denominator = distPositive[i] + distNegative[i];
+            closeness[i] = denominator === 0 ? 0 : distNegative[i] / denominator;
+        }
+        const results = alternatives.map((alt, i) => ({ name: alt.name, score: closeness[i] }));
+        results.sort((a, b) => b.score - a.score);
+        return results;
+    }
+
+    function renderCriteria() {
+        const container = document.getElementById('criteria-weights');
+        container.innerHTML = '<div><h4 class="text-lg font-semibold text-slate-700">Bobot Kriteria</h4><p class="text-sm text-slate-500 mb-4">Geser untuk menyesuaikan tingkat kepentingan setiap kriteria. Total bobot akan dinormalisasi.</p></div>';
+        appData.criteria.forEach(crit => {
+            const critDiv = document.createElement('div');
+            critDiv.className = 'mb-4';
+            critDiv.innerHTML = `<label for="${crit.id}-weight" class="block text-sm font-medium text-slate-700">${crit.name}</label><div class="flex items-center space-x-4"><input type="range" id="${crit.id}-weight" min="0" max="1" step="0.05" value="${crit.weight}" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"><span id="${crit.id}-weight-value" class="font-semibold text-sky-600 w-12 text-center">${crit.weight.toFixed(2)}</span></div>`;
+            container.appendChild(critDiv);
+        });
+    }
+
+    function renderAlternatives() {
+        const container = document.getElementById('alternatives-inputs');
+        container.innerHTML = '<div><h4 class="text-lg font-semibold text-slate-700 mt-6">Nilai Alternatif</h4><p class="text-sm text-slate-500 mb-4">Berikan rating (1-5) untuk setiap ekskul berdasarkan kriteria.</p></div>';
+        appData.alternatives.forEach(alt => {
+            const altDiv = document.createElement('div');
+            altDiv.className = 'p-4 border border-slate-200 rounded-lg';
+            let inputsHTML = `<h5 class="font-semibold text-slate-800">${alt.name}</h5><div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">`;
+            appData.criteria.forEach(crit => {
+                inputsHTML += `<div><label for="${alt.id}-${crit.id}-value" class="block text-xs text-slate-500">${crit.name}</label><input type="number" id="${alt.id}-${crit.id}-value" min="1" max="5" value="${alt.values[crit.id]}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"></div>`;
+            });
+            inputsHTML += `</div>`;
+            altDiv.innerHTML = inputsHTML;
+            container.appendChild(altDiv);
+        });
+    }
+    
+    function updateAndCalculate() {
+        let totalWeight = 0;
+        appData.criteria.forEach(crit => {
+            const weightInput = document.getElementById(`${crit.id}-weight`);
+            crit.weight = parseFloat(weightInput.value);
+            totalWeight += crit.weight;
+        });
+        const normalizedWeights = appData.criteria.map(crit => totalWeight === 0 ? 1/appData.criteria.length : crit.weight / totalWeight);
+        appData.criteria.forEach((crit, i) => {
+             document.getElementById(`${crit.id}-weight-value`).textContent = normalizedWeights[i].toFixed(2);
+        });
+        appData.alternatives.forEach(alt => {
+            appData.criteria.forEach(crit => {
+                const valueInput = document.getElementById(`${alt.id}-${crit.id}-value`);
+                alt.values[crit.id] = parseInt(valueInput.value, 10);
+            });
+        });
+        const results = topsis(appData.alternatives, appData.criteria, normalizedWeights);
+        renderResults(results, normalizedWeights);
+    }
+
+    function renderResults(results, weights) {
+        if (charts.resultsChart) charts.resultsChart.destroy();
+        const resultsCtx = document.getElementById('resultsChart').getContext('2d');
+        charts.resultsChart = new Chart(resultsCtx, {
+            type: 'bar',
+            data: { labels: results.map(r => r.name), datasets: [{ label: 'Skor Preferensi (Ci)', data: results.map(r => r.score), backgroundColor: ['#38bdf8', '#60a5fa', '#818cf8'], borderColor: ['#0ea5e9', '#3b82f6', '#6366f1'], borderWidth: 1 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Peringkat Rekomendasi' } }, scales: { x: { beginAtZero: true, max: 1 } } }
+        });
+
+        const tableBody = document.getElementById('results-table');
+        tableBody.innerHTML = '';
+        results.forEach((res, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td class="px-4 py-3 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${index === 0 ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}">${index + 1}</span></td><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${res.name}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">${res.score.toFixed(4)}</td>`;
+            tableBody.appendChild(row);
+        });
+        
+        if(charts.weightsChart) charts.weightsChart.destroy();
+        const weightsCtx = document.getElementById('weightsChart').getContext('2d');
+        charts.weightsChart = new Chart(weightsCtx, {
+            type: 'doughnut',
+            data: { labels: appData.criteria.map(c => c.name), datasets: [{ label: 'Bobot', data: weights, backgroundColor: ['#38bdf8', '#fb923c', '#a78bfa'], hoverOffset: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+    }
+
+    function renderDatabaseDesign() {
+        const container = document.getElementById('database-design');
+        container.innerHTML = `
+            <h3 class="text-2xl font-bold text-slate-800 text-center">Cetak Biru Database</h3>
+            <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">Fondasi data yang terstruktur untuk menyimpan semua informasi secara efisien, dirancang untuk PostgreSQL.</p>
+            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="section-card p-6">
+                    <h4 class="font-bold text-lg text-slate-800">Tabel Inti</h4>
+                    <ul class="mt-4 space-y-3 font-mono text-sm">
+                        <li class="bg-slate-100 p-2 rounded"><strong>Siswa:</strong> (no_induk, nama, gender, kelas)</li>
+                        <li class="bg-slate-100 p-2 rounded"><strong>Ekstrakurikuler:</strong> (nama, kategori, deskripsi, jadwal, kuota)</li>
+                        <li class="bg-slate-100 p-2 rounded"><strong>MinatSiswa:</strong> (siswa_id, ekskul_id, rating_minat, dll)</li>
+                        <li class="bg-slate-100 p-2 rounded"><strong>User (Bawaan Django):</strong> (username, password, email)</li>
+                    </ul>
+                </div>
+                <div class="section-card p-6">
+                    <h4 class="font-bold text-lg text-slate-800">Visualisasi Hubungan</h4>
+                    <div class="mt-4 bg-slate-800 text-white p-4 rounded-md font-mono text-sm">
+                        <p>[User] 1--1 [Siswa]</p>
+                        <p class="pl-8">|</p>
+                        <p class="pl-8">\`---&lt; [MinatSiswa] &gt;--- [Ekstrakurikuler]</p>
+                        <p class="mt-2 text-slate-400 text-xs">// 'MinatSiswa' adalah tabel penghubung yang menyimpan rating dari setiap siswa untuk setiap ekskul.</p>
+                    </div>
+                </div>
+            </div>`;
+    }
+    
+    function renderDataCollection() {
+        const container = document.getElementById('data-collection');
+        container.innerHTML = `
+            <h3 class="text-2xl font-bold text-slate-800 text-center">Strategi Pengumpulan Data</h3>
+            <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">Pendekatan dua fase untuk mendapatkan data awal dengan cepat dan mengelolanya secara berkelanjutan melalui aplikasi.</p>
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="section-card p-6">
+                    <h4 class="font-bold text-lg text-slate-800">Fase 1: Koleksi Awal via Google Forms</h4>
+                    <p class="text-sm text-slate-500 mb-4">Cepat, mudah bagi sekolah, dan memungkinkan pengembangan backend dimulai tanpa menunggu frontend jadi.</p>
+                    <div class="space-y-3">
+                        <p class="font-semibold text-slate-700">Contoh Pertanyaan (Form Siswa):</p>
+                        <ul class="list-disc list-inside text-sm text-slate-600">
+                            <li>Nama Lengkap Siswa</li>
+                            <li>Nomor Induk Siswa (NIS)</li>
+                            <li>Kelas Saat Ini</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="section-card p-6">
+                    <h4 class="font-bold text-lg text-slate-800">Fase 2: Manajemen via Aplikasi Web</h4>
+                    <p class="text-sm text-slate-500 mb-4">Terintegrasi, tervalidasi, dan menjadi satu-satunya sumber data setelah sistem berjalan.</p>
+                     <div class="space-y-3">
+                        <p class="font-semibold text-slate-700">Contoh Form Admin (Tambah Ekskul):</p>
+                        <ul class="list-disc list-inside text-sm text-slate-600">
+                            <li>Nama Ekstrakurikuler: [Input Teks]</li>
+                            <li>Kategori: [Dropdown]</li>
+                            <li>Kuota Peserta: [Input Angka]</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function renderApiTesting() {
+        const container = document.getElementById('api-testing');
+        container.innerHTML = `
+            <h3 class="text-2xl font-bold text-slate-800 text-center">Pengujian API dengan Postman</h3>
+            <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">Memastikan setiap 'pintu' atau endpoint API di backend berfungsi dengan benar sebelum dihubungkan ke antarmuka pengguna.</p>
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="section-card p-6"><h4 class="font-semibold">1. Siapkan Request</h4><p class="mt-2 text-slate-600">Pilih metode (POST/GET) dan masukkan URL endpoint, misal: <code class="text-xs bg-slate-200 p-1 rounded">/api/register/</code>.</p></div>
+                <div class="section-card p-6"><h4 class="font-semibold">2. Isi Body (jika perlu)</h4><p class="mt-2 text-slate-600">Masukkan data dalam format JSON untuk dikirim ke server, seperti username dan password.</p></div>
+                <div class="section-card p-6"><h4 class="font-semibold">3. Analisis Respons</h4><p class="mt-2 text-slate-600">Periksa status code (misal, 201 Created) dan data yang dikembalikan untuk memastikan API bekerja sesuai harapan.</p></div>
+            </div>`;
+    }
+
+    function renderSoftwareStack() {
+        const container = document.getElementById('software-stack');
+        let content = `<h3 class="text-2xl font-bold text-slate-800 text-center">Tumpukan Teknologi & Perangkat Lunak</h3>
+                       <p class="mt-2 text-center text-slate-600 max-w-2xl mx-auto">Kombinasi teknologi yang dipilih untuk membangun aplikasi yang modern, efisien, dan andal.</p>
+                       <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">`;
+        appData.softwareStack.forEach(item => {
+            content += `<div class="section-card p-6">
+                <h4 class="font-bold text-lg text-slate-800">${item.tech}</h4>
+                <p class="text-sm font-semibold text-sky-600 mb-2">${item.category}</p>
+                <p class="text-slate-600">${item.just}</p>
+            </div>`;
+        });
+        content += `</div>`;
+        container.innerHTML = content;
+    }
+
+    function renderUserFeatures() {
+        const desktopTabs = document.getElementById('tabs-desktop');
+        const mobileSelect = document.getElementById('tabs-select');
+        const contentContainer = document.getElementById('tab-content');
+        appData.userFeatures.forEach((roleData, index) => {
+            const tabButton = document.createElement('a');
+            tabButton.href = '#';
+            tabButton.className = `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${index === 0 ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`;
+            tabButton.textContent = roleData.role;
+            tabButton.setAttribute('data-tab', roleData.role);
+            desktopTabs.appendChild(tabButton);
+            const option = document.createElement('option');
+            option.value = roleData.role;
+            option.textContent = roleData.role;
+            mobileSelect.appendChild(option);
+        });
+        function updateContent(roleName) {
+            const roleData = appData.userFeatures.find(r => r.role === roleName);
+            if (!roleData) return;
+            let featuresHTML = `<ul class="space-y-4">`;
+            roleData.features.forEach(feature => {
+                featuresHTML += `<li class="flex items-start"><div class="flex-shrink-0 h-6 w-6 flex items-center justify-center bg-sky-100 rounded-lg text-sky-700">${feature.icon}</div><p class="ml-3 text-base font-medium text-slate-700">${feature.name}</p></li>`;
+            });
+            featuresHTML += `</ul>`;
+            contentContainer.innerHTML = `<div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-2xl font-bold text-slate-800">${roleData.role}</h3><p class="mt-2 text-slate-600">${roleData.description}</p><div class="mt-6">${featuresHTML}</div></div>`;
+        }
+        desktopTabs.addEventListener('click', e => {
+            e.preventDefault();
+            if (e.target.tagName === 'A') {
+                const roleName = e.target.getAttribute('data-tab');
+                updateContent(roleName);
+                desktopTabs.querySelectorAll('a').forEach(tab => {
+                    tab.className = `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${tab.getAttribute('data-tab') === roleName ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`;
+                });
+            }
+        });
+        mobileSelect.addEventListener('change', e => { updateContent(e.target.value); });
+        updateContent(appData.userFeatures[0].role);
+    }
+    
+    // Initial Renders
+    renderCriteria();
+    renderAlternatives();
+    document.getElementById('criteria-weights').addEventListener('input', updateAndCalculate);
+    document.getElementById('alternatives-inputs').addEventListener('input', updateAndCalculate);
+    updateAndCalculate();
+
+    renderUserFeatures();
+    renderDatabaseDesign();
+    renderDataCollection();
+    renderApiTesting();
+    renderSoftwareStack();
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    mobileMenuButton.addEventListener('click', () => {
+        const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+        mobileMenu.classList.toggle('hidden');
+        hamburgerIcon.children[0].classList.toggle('rotate-45');
+        hamburgerIcon.children[0].classList.toggle('translate-y-2');
+        hamburgerIcon.children[1].classList.toggle('opacity-0');
+        hamburgerIcon.children[2].classList.toggle('-rotate-45');
+        hamburgerIcon.children[2].classList.toggle('-translate-y-2');
+    });
+    
+    // Scroll-spy for navigation
+    const sections = document.querySelectorAll('main section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const header = document.getElementById('header');
+    
+    const observer = new IntersectionObserver((entries) => {
+        let activeSectionId = '';
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
+                activeSectionId = entry.target.id;
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href').substring(1) === activeSectionId);
+        });
+    }, { rootMargin: `-${header.offsetHeight}px 0px -50% 0px`, threshold: 0.1 });
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+});
+</script>
+</body>
+</html>
