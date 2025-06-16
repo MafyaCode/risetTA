@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Proyek Skripsi - Sistem Rekomendasi Musik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Academic Ivory & Slate -->
+    <!-- Application Structure Plan: Aplikasi web satu halaman ini dirancang dengan struktur tematik yang dapat dinavigasi melalui bilah navigasi atas yang sticky. Struktur ini memecah laporan padat menjadi beberapa bagian utama yang dapat diakses langsung: Metodologi, Arsitektur, Alur Pengguna, Evaluasi, dan Deployment. Pendekatan non-linear ini memungkinkan pengguna (mahasiswa/dosen) untuk dengan cepat melompat ke bagian spesifik dari rencana proyek. Interaktivitas ditambahkan melalui diagram terstruktur HTML/CSS, tab interaktif untuk alur pengguna, dan bagan evaluasi dinamis untuk membuat konsep kompleks lebih mudah dipahami dan menarik secara visual, yang lebih unggul daripada sekadar menggulir dokumen teks panjang. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Metode KBRS -> Goal: Compare/Organize -> Viz/Presentation: Kartu berdampingan dengan alur logika terstruktur HTML/CSS -> Interaction: Klik untuk detail (simulasi) -> Justification: Menyederhanakan dan membandingkan dua algoritma inti.
+        - Report Info: Arsitektur Sistem 4-Tier -> Goal: Organize -> Viz/Presentation: Diagram alur visual yang dibangun dengan HTML/CSS Flexbox -> Interaction: Statis -> Justification: Mengkomunikasikan tumpukan teknologi dan aliran data secara jelas.
+        - Report Info: Alur Kerja Pengguna -> Goal: Compare/Organize -> Viz/Presentation: Sistem tab interaktif (Guest, User, Admin) -> Interaction: Klik pada tab untuk mengganti konten -> Justification: Memungkinkan perbandingan langsung dari tiga peran pengguna yang berbeda secara efisien.
+        - Report Info: Metrik Evaluasi -> Goal: Compare/Inform -> Viz/Presentation: Bagan batang dinamis menggunakan Chart.js -> Interaction: Arahkan kursor untuk melihat tooltip dengan nilai spesifik -> Justification: Memberikan contoh kuantitatif yang nyata tentang bagaimana kinerja sistem akan diukur.
+        - Report Info: Struktur Proyek CD -> Goal: Organize -> Viz/Presentation: Struktur pohon file yang dibuat dengan HTML/CSS -> Interaction: Statis -> Justification: Memvisualisasikan artefak akhir yang akan dikirimkan dengan jelas.
+        - Library/Method: Chart.js untuk visualisasi data, Tailwind CSS untuk semua styling dan layout. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFCF5;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #4A90E2;
+            border-bottom-color: #4A90E2;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #4A90E2;
+            color: white;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flow-diagram > div {
+            border: 2px solid #EAEAEA;
+            background-color: #FAFAFA;
+        }
+        .flow-diagram .arrow {
+            color: #4A90E2;
+            font-weight: bold;
+        }
+        .file-tree ul {
+            padding-left: 1.5rem;
+            border-left: 1px solid #D1D5DB;
+        }
+        .file-tree li {
+            position: relative;
+            padding-left: 1rem;
+        }
+        .file-tree li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.7rem;
+            width: 0.75rem;
+            height: 1px;
+            background-color: #D1D5DB;
+        }
+        .file-tree .icon {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800">Proyek Skripsi</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#metodologi" class="nav-link py-2">Metodologi</a>
+                    <a href="#arsitektur" class="nav-link py-2">Arsitektur</a>
+                    <a href="#alur-pengguna" class="nav-link py-2">Alur Pengguna</a>
+                    <a href="#evaluasi" class="nav-link py-2">Evaluasi</a>
+                    <a href="#deployment" class="nav-link py-2">Deployment</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option value="#home">Menu</option>
+                        <option value="#metodologi">Metodologi</option>
+                        <option value="#arsitektur">Arsitektur</option>
+                        <option value="#alur-pengguna">Alur Pengguna</option>
+                        <option value="#evaluasi">Evaluasi</option>
+                        <option value="#deployment">Deployment</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="home" class="container mx-auto px-6 py-12">
+
+        <section class="text-center mb-20">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#3D405B]">Sistem Rekomendasi Musik</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">Sebuah Rencana Proyek Interaktif untuk Skripsi "Sistem Rekomendasi Untuk Pemilihan Musik Menggunakan Metode Knowledge-Based Recommendation"</p>
+        </section>
+
+        <section id="metodologi" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#3D405B]">Metodologi Inti: KBRS Hibrida</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+                Proyek ini mengusulkan model Knowledge-Based Recommendation System (KBRS) hibrida yang canggih untuk mengatasi skenario pengguna yang berbeda. Pendekatan ini secara cerdas menangani masalah 'cold-start' untuk pengguna baru sambil memberikan personalisasi mendalam untuk pengguna terdaftar.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-bold mb-4 text-[#4A90E2]">Untuk Tamu: Constraint-Based</h3>
+                    <p class="mb-6">Sistem merekomendasikan lagu dengan menerjemahkan input sementara pengguna (mood, aktivitas) menjadi batasan eksplisit. Ini cepat, transparan, dan tidak memerlukan riwayat pengguna.</p>
+                    <div class="space-y-4 text-sm p-4 bg-gray-50 rounded-md">
+                        <div class="font-semibold">Contoh Alur Logika:</div>
+                        <div><span class="font-bold text-blue-600">1. Input:</span> Pengguna memilih Mood 'Senang' & Aktivitas 'Pesta'.</div>
+                        <div><span class="font-bold text-blue-600">2. Terjemahan:</span> Sistem membuat batasan: `mood IN ['happy', 'energetic']` DAN `tempo > 120`.</div>
+                        <div><span class="font-bold text-blue-600">3. Eksekusi:</span> Query SQL dijalankan untuk mencari lagu yang cocok.</div>
+                        <div class="p-2 bg-gray-200 rounded font-mono text-xs">
+                           <span class="text-purple-600">SELECT</span> * <span class="text-purple-600">FROM</span> songs <span class="text-purple-600">WHERE</span> mood_tag <span class="text-purple-600">IN</span> ('happy', 'energetic');
+                        </div>
+                        <div><span class="font-bold text-blue-600">4. Hasil:</span> Daftar lagu yang relevan ditampilkan.</div>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-bold mb-4 text-[#81B29A]">Untuk User: Decision Tree</h3>
+                    <p class="mb-6">Untuk pengguna terdaftar, sistem 'mempelajari' preferensi mereka dengan melatih model Decision Tree. Model ini mengubah riwayat rating menjadi serangkaian aturan IF-THEN yang dapat diinterpretasikan.</p>
+                    <div class="space-y-4 text-sm p-4 bg-gray-50 rounded-md">
+                        <div class="font-semibold">Contoh Aturan Terpelajar:</div>
+                        <div><span class="font-bold text-green-600">1. Fitur:</span> `user_genre`, `user_mood`, `song_genre`, `song_mood`.</div>
+                        <div><span class="font-bold text-green-600">2. Target:</span> `rating > 3` (Suka) / `rating <= 3` (Tidak Suka).</div>
+                        <div><span class="font-bold text-green-600">3. Aturan:</span> Pohon keputusan menghasilkan aturan seperti:</div>
+                        <div class="p-2 bg-gray-200 rounded font-mono text-xs">
+                           <span class="text-red-600">IF</span> user_prefers('rock') <span class="text-red-600">AND</span> song_mood('energetic') <span class="text-red-600">THEN</span> predict('Suka')
+                        </div>
+                        <div><span class="font-bold text-green-600">4. Penjelasan:</span> Memungkinkan fitur "Mengapa lagu ini direkomendasikan?".</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="arsitektur" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#3D405B]">Arsitektur & Tumpukan Teknologi</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+                Aplikasi ini dirancang dengan arsitektur multi-tier yang terpisah untuk skalabilitas dan kemudahan pemeliharaan. Setiap lapisan memiliki tanggung jawab yang jelas, didukung oleh teknologi modern yang dipilih secara spesifik untuk proyek ini.
+            </p>
+            <div class="card p-8 rounded-lg">
+                <h3 class="text-2xl font-bold text-center mb-8">Arsitektur Sistem 4-Tier</h3>
+                <div class="flow-diagram flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                    <div class="p-4 rounded-lg w-full md:w-1/4">
+                        <div class="text-2xl mb-2">🖥️</div>
+                        <h4 class="font-bold">Frontend</h4>
+                        <p class="text-xs">React & Tailwind</p>
+                    </div>
+                    <div class="arrow text-2xl transform md:-rotate-0">&rarr;</div>
+                    <div class="p-4 rounded-lg w-full md:w-1/4">
+                        <div class="text-2xl mb-2">⚙️</div>
+                        <h4 class="font-bold">Backend API</h4>
+                        <p class="text-xs">Python & FastAPI</p>
+                    </div>
+                    <div class="arrow text-2xl transform md:-rotate-0">&rarr;</div>
+                    <div class="p-4 rounded-lg w-full md:w-1/4">
+                        <div class="text-2xl mb-2">🧠</div>
+                        <h4 class="font-bold">ML Service</h4>
+                        <p class="text-xs">Scikit-learn</p>
+                    </div>
+                    <div class="arrow text-2xl transform md:-rotate-0">&rarr;</div>
+                    <div class="p-4 rounded-lg w-full md:w-1/4">
+                        <div class="text-2xl mb-2">🗄️</div>
+                        <h4 class="font-bold">Database</h4>
+                        <p class="text-xs">PostgreSQL</p>
+                    </div>
+                </div>
+                <div class="mt-12">
+                     <h3 class="text-2xl font-bold text-center mb-8">Tumpukan Teknologi</h3>
+                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                        <div class="p-4 bg-gray-50 rounded-lg"><span class="font-bold">Frontend:</span> React</div>
+                        <div class="p-4 bg-gray-50 rounded-lg"><span class="font-bold">Backend:</span> FastAPI</div>
+                        <div class="p-4 bg-gray-50 rounded-lg"><span class="font-bold">Database:</span> PostgreSQL</div>
+                        <div class="p-4 bg-gray-50 rounded-lg"><span class="font-bold">ML:</span> Scikit-learn</div>
+                        <div class="p-4 bg-gray-50 rounded-lg"><span class="font-bold">Deployment:</span> Docker</div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="alur-pengguna" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#3D405B]">Desain Alur Kerja Pengguna</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+                Sistem ini melayani tiga peran pengguna yang berbeda, masing-masing dengan alur kerja yang dirancang khusus untuk memenuhi kebutuhan fungsional mereka. Gunakan tab di bawah untuk menjelajahi perjalanan setiap pengguna.
+            </p>
+            <div class="card p-6 sm:p-8 rounded-lg">
+                <div class="mb-6 flex justify-center border-b border-gray-200">
+                    <button class="tab-button active py-2 px-6 font-medium" data-tab="guest">Tamu</button>
+                    <button class="tab-button py-2 px-6 font-medium" data-tab="user">User</button>
+                    <button class="tab-button py-2 px-6 font-medium" data-tab="admin">Admin</button>
+                </div>
+
+                <div id="tab-content">
+                    <div class="tab-pane active" id="guest-content">
+                        <ol class="relative border-l border-gray-300 dark:border-gray-700 ml-4">                  
+                            <li class="mb-10 ml-6">            
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white">1</span>
+                                <h3 class="font-semibold text-lg">Kunjungi Homepage</h3>
+                                <p class="text-base font-normal text-gray-500">Mendarat di halaman utama dan melihat widget "Rekomendasi Cepat".</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white">2</span>
+                                <h3 class="font-semibold text-lg">Isi Kuesioner Mini</h3>
+                                <p class="text-base font-normal text-gray-500">Menjawab pertanyaan singkat tentang mood dan aktivitas saat ini.</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white">3</span>
+                                <h3 class="font-semibold text-lg">Dapatkan Rekomendasi</h3>
+                                <p class="text-base font-normal text-gray-500">Melihat daftar lagu yang dihasilkan secara instan berdasarkan input.</p>
+                            </li>
+                             <li class="ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white">4</span>
+                                <h3 class="font-semibold text-lg">Jelajah Terbatas</h3>
+                                <p class="text-base font-normal text-gray-500">Dapat melihat detail lagu, dengan ajakan untuk mendaftar/login untuk fitur lebih.</p>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="tab-pane hidden" id="user-content">
+                        <ol class="relative border-l border-green-300 dark:border-green-700 ml-4">                  
+                            <li class="mb-10 ml-6">            
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-green-100 rounded-full -left-3 ring-8 ring-white">1</span>
+                                <h3 class="font-semibold text-lg">Registrasi & Login</h3>
+                                <p class="text-base font-normal text-gray-500">Membuat akun dan masuk ke sistem.</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-green-100 rounded-full -left-3 ring-8 ring-white">2</span>
+                                <h3 class="font-semibold text-lg">Atur Profil Preferensi</h3>
+                                <p class="text-base font-normal text-gray-500">Saat pertama kali login, memilih genre dan mood yang disukai sebagai dasar profil.</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-green-100 rounded-full -left-3 ring-8 ring-white">3</span>
+                                <h3 class="font-semibold text-lg">Jelajah & Beri Rating</h3>
+                                <p class="text-base font-normal text-gray-500">Mencari musik, melihat detail, dan memberi rating 1-5. Setiap rating melatih model.</p>
+                            </li>
+                             <li class="ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-green-100 rounded-full -left-3 ring-8 ring-white">4</span>
+                                <h3 class="font-semibold text-lg">Lihat Rekomendasi Personal</h3>
+                                <p class="text-base font-normal text-gray-500">Mengunjungi dasbor pribadi untuk melihat daftar lagu yang direkomendasikan oleh Decision Tree.</p>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="tab-pane hidden" id="admin-content">
+                        <ol class="relative border-l border-orange-300 dark:border-orange-700 ml-4">                  
+                            <li class="mb-10 ml-6">            
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full -left-3 ring-8 ring-white">1</span>
+                                <h3 class="font-semibold text-lg">Login Admin</h3>
+                                <p class="text-base font-normal text-gray-500">Masuk ke sistem melalui halaman login khusus dengan kredensial admin.</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full -left-3 ring-8 ring-white">2</span>
+                                <h3 class="font-semibold text-lg">Lihat Dasbor Utama</h3>
+                                <p class="text-base font-normal text-gray-500">Melihat statistik ringkasan seperti jumlah pengguna, lagu, dan rating rata-rata.</p>
+                            </li>
+                            <li class="mb-10 ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full -left-3 ring-8 ring-white">3</span>
+                                <h3 class="font-semibold text-lg">Manajemen Data Musik (CRUD)</h3>
+                                <p class="text-base font-normal text-gray-500">Menambah, membaca, mengubah, dan menghapus data lagu, artis, serta album.</p>
+                            </li>
+                             <li class="ml-6">
+                                <span class="absolute flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full -left-3 ring-8 ring-white">4</span>
+                                <h3 class="font-semibold text-lg">Akses Laporan Statistik</h3>
+                                <p class="text-base font-normal text-gray-500">Melihat laporan agregat seperti minat pengguna per genre dan lagu yang paling sering direkomendasikan.</p>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluasi" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#3D405B]">Rencana Evaluasi Kinerja</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+                Evaluasi sistem akan dilakukan secara komprehensif, menggabungkan metrik kuantitatif untuk akurasi, metrik kualitatif untuk kualitas pengalaman, dan survei kepuasan pengguna untuk umpan balik langsung.
+            </p>
+            <div class="card p-6 sm:p-8 rounded-lg">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Metrik Kuantitatif & Kualitatif</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-blue-50 rounded-md"><strong>Precision@K & Recall@K:</strong> Mengukur akurasi dasar dari K rekomendasi teratas.</div>
+                            <div class="p-3 bg-blue-50 rounded-md"><strong>NDCG:</strong> Metrik peringkat canggih yang menilai posisi item relevan.</div>
+                            <div class="p-3 bg-green-50 rounded-md"><strong>Diversity:</strong> Mengukur seberapa bervariasi lagu dalam daftar rekomendasi.</div>
+                            <div class="p-3 bg-green-50 rounded-md"><strong>Novelty & Serendipity:</strong> Menilai kemampuan sistem merekomendasikan lagu baru yang mengejutkan namun relevan.</div>
+                        </div>
+                    </div>
+                    <div>
+                         <h3 class="text-xl font-bold mb-4 text-center">Contoh Visualisasi Hasil Evaluasi</h3>
+                         <div class="chart-container">
+                            <canvas id="evaluationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="deployment" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#3D405B]">Pengemasan & Deployment Akhir</h2>
+             <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+                Untuk memenuhi persyaratan penyerahan CD, seluruh aplikasi akan dikemas menggunakan Docker. Ini memastikan proyek dapat berjalan secara mandiri dan offline di mesin penguji dengan satu perintah sederhana, menunjukkan praktik rekayasa perangkat lunak modern.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Struktur Final Proyek di CD</h3>
+                    <div class="p-4 bg-gray-800 text-white rounded-md font-mono text-sm file-tree">
+                        <span><span class="icon">📁</span>/</span>
+                        <ul>
+                            <li><span class="icon">📁</span>backend/</li>
+                            <li><span class="icon">📁</span>frontend/</li>
+                            <li><span class="icon">📁</span>docker-images/
+                                <ul>
+                                    <li><span class="icon">📦</span>python_image.tar</li>
+                                    <li><span class="icon">📦</span>postgres_image.tar</li>
+                                </ul>
+                            </li>
+                            <li><span class="icon">📄</span>docker-compose.yml</li>
+                            <li><span class="icon">🚀</span>start-project.bat</li>
+                            <li><span class="icon">🚀</span>start-project.sh</li>
+                            <li><span class="icon">ℹ️</span>README.md</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Proses "Plug-and-Play"</h3>
+                     <ol class="list-decimal list-inside space-y-3">
+                        <li><strong>Prasyarat:</strong> Dosen penguji hanya perlu menginstal Docker Desktop.</li>
+                        <li><strong>Simpan Image:</strong> Semua base image (Python, Postgres, dll.) disimpan sebagai file `.tar` di dalam CD untuk operasi offline.</li>
+                        <li><strong>Jalankan Skrip:</strong> Penguji cukup mengklik `start-project.bat` (Windows) atau `start-project.sh` (Mac/Linux).</li>
+                        <li><strong>Otomatisasi:</strong> Skrip secara otomatis akan:
+                            <ul class="list-disc list-inside ml-5 mt-2">
+                                <li>Memuat image Docker dari file `.tar`.</li>
+                                <li>Menjalankan `docker-compose up` untuk membangun dan memulai semua layanan (DB, Backend, Frontend).</li>
+                                <li>Membuka browser ke `http://localhost:3000`.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-4 text-center">
+            <p>&copy; 2025 Rencana Proyek Skripsi. Dibuat sebagai visualisasi interaktif.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', (e) => {
+                const targetId = e.target.value;
+                if(targetId) {
+                    const targetElement = document.querySelector(targetId);
+                    if(targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const panes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetPaneId = tab.getAttribute('data-tab') + '-content';
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    panes.forEach(pane => {
+                        if (pane.id === targetPaneId) {
+                            pane.classList.remove('hidden');
+                            pane.classList.add('active');
+                        } else {
+                            pane.classList.remove('active');
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const ctx = document.getElementById('evaluationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Precision@10', 'Recall@10', 'NDCG', 'Diversity', 'Novelty'],
+                    datasets: [{
+                        label: 'Skor Kinerja Model',
+                        data: [0.82, 0.65, 0.78, 0.88, 0.71],
+                        backgroundColor: [
+                            'rgba(74, 144, 226, 0.6)',
+                            'rgba(74, 144, 226, 0.6)',
+                            'rgba(74, 144, 226, 0.6)',
+                            'rgba(129, 178, 154, 0.6)',
+                            'rgba(129, 178, 154, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(74, 144, 226, 1)',
+                            'rgba(74, 144, 226, 1)',
+                            'rgba(74, 144, 226, 1)',
+                            'rgba(129, 178, 154, 1)',
+                            'rgba(129, 178, 154, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'Skor (0.0 - 1.0)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Contoh Skor Metrik Evaluasi'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
